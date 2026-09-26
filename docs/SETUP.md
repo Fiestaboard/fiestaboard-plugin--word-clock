@@ -30,7 +30,7 @@ Show the time spelled out in words on your Vestaboard, in German, English, Spani
 | `{{word_clock.phrase_short}}` | Same, without the opener | `QUARTER PAST TEN` |
 | `{{word_clock.prefix}}` | The opener, which Spanish agrees with the hour | `IT IS` |
 | `{{word_clock.block}}` | The whole laid-out board, rows separated by newlines | see below |
-| `{{word_clock.line1}}` … `{{word_clock.line6}}` | The same rows individually, padded to the board width | `IT IS QUARTER PAST TEN` |
+| `{{word_clock.line1}}` … `{{word_clock.line24}}` | The same rows individually, padded to the board width. `line24` is the platform maximum (an 8-tall note array); rows past the board's actual height are empty. | `IT IS QUARTER PAST TEN` |
 | `{{word_clock.hour_word}}` | The hour the phrase names | `TEN` |
 | `{{word_clock.time}}` | Exact time behind the phrase | `10:17` |
 | `{{word_clock.step}}` | Five-minute step (0–55) | `15` |

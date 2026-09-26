@@ -10,7 +10,7 @@ Tell the time in words the way a QLOCKTWO does — in German, English, Spanish o
 
 A physical word clock lights letters inside a fixed matrix. A split-flap has no dim state, so this plugin renders only the words that would be lit — which is what the matrix visually reduces to anyway — and lays them out for the board it is rendering on.
 
-The phrase moves in five-minute steps (`IT IS QUARTER PAST TEN`, `ES IST VIERTEL NACH ZEHN`, `SON LAS ONCE MENOS CUARTO`, `IL EST ONZE HEURES MOINS LE QUART`). Every phrase in all four languages fits a Note (15×3) as well as a Flagship (22×6); the plugin reads `self.board` at render time and re-wraps accordingly, so one page works on both.
+The phrase moves in five-minute steps (`IT IS QUARTER PAST TEN`, `ES IST VIERTEL NACH ZEHN`, `SON LAS ONCE MENOS CUARTO`, `IL EST ONZE HEURES MOINS LE QUART`). Every phrase in all four languages fits a Note (15×3) as well as a Flagship (22×6); the plugin reads `self.board` at render time and re-wraps accordingly, so one page works on every board FiestaBoard supports, including a note array of any size up to 120×24 (a FiestaPanel is a note array sized to a TV). On anything wider than a Flagship, the phrase is letterspaced to fill the row rather than sitting as a small island of text on an otherwise blank board.
 
 ![Word Clock on a Note](./docs/board-note.png)
 
@@ -29,7 +29,7 @@ The phrase moves in five-minute steps (`IT IS QUARTER PAST TEN`, `ES IST VIERTEL
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `{{word_clock.block}}` | The whole laid-out board as one value, rows separated by newlines | `IT IS QUARTER PAST TEN ␤ …` |
-| `{{word_clock.line1}}` … `{{word_clock.line6}}` | The same rows individually, each padded to the board width. Rows past the board's height are empty. | `IT IS QUARTER PAST TEN` |
+| `{{word_clock.line1}}` … `{{word_clock.line24}}` | The same rows individually, each padded to the board width. `line24` is the platform maximum (an 8-tall note array); rows past the board's actual height are empty. | `IT IS QUARTER PAST TEN` |
 
 ### Details
 
