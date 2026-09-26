@@ -3,11 +3,19 @@
 Renders the current time the way a QLOCKTWO-style word clock does — as a
 spelled-out phrase in five-minute steps ("ES IST VIERTEL NACH ZEHN",
 "IT IS QUARTER PAST TEN") — and lays it out for the board it is rendering
-on, so the same plugin fits a Flagship (22x6) and a Note (15x3).
+on: a Flagship (22x6), a Note (15x3), or a note array of any size up to
+120x24 (a FiestaPanel is a note array sized to a TV). Every dimension is
+read from ``self.board``; nothing on the layout path is hardcoded to a
+particular device.
 
 A real word clock lights letters inside a fixed matrix. A split-flap has no
 "dim" state, so this plugin renders only the words that would be lit, which
-is what the matrix visually reduces to anyway.
+is what the matrix visually reduces to anyway -- that reasoning holds at any
+board size, so this still does not carry a fixed letter grid. What DOES
+change with the board is density: a phrase sized for a Flagship's 132 tiles
+would occupy under 1% of a 120x24 array, so on anything wider than a
+Flagship the phrase is letterspaced to fill the row (see `_letterspace`)
+rather than left as a small island of text in a mostly blank board.
 """
 
 import logging
@@ -29,6 +37,21 @@ DEFAULT_TIMEZONE = "UTC"
 # two shapes, so a phrase laid out for it never silently loses words.
 FALLBACK_WIDTH = 22
 FALLBACK_HEIGHT = 6
+
+# Platform maximum for the line1..lineN template variables: an 8-tall note
+# array is the tallest board FiestaBoard supports (8 notes * 3 rows). This is
+# a variable-count bound, unrelated to FALLBACK_HEIGHT above (which is what
+# self.board defaults to when no board is bound at all) -- do not conflate
+# the two. Rows past the current board's height are simply emitted blank.
+MAX_LINE_VARIABLES = 24
+
+# A board wider than a Flagship has enough spare tiles that a single
+# word-clock line reads as a stray scrap of text near the middle of a mostly
+# blank row (a 120-wide note array puts a 22-character phrase in 0.8% of the
+# board). Above this width, lines are letterspaced to fill the row -- see
+# `_letterspace`. At or below it (Flagship and Note, and every array no wider
+# than a Flagship), spacing is left untouched so existing layouts don't shift.
+LETTERSPACE_ABOVE_WIDTH = FALLBACK_WIDTH
 
 # Characters the board can actually flap. Anything outside this set is dropped
 # rather than sent as a wrong tile. Reference: src/board_chars.py in FiestaBoard.
@@ -320,29 +343,77 @@ def wrap_words(text: str, width: int) -> list[str]:
     return lines
 
 
-def _align(line: str, width: int, alignment: str) -> list[str]:
-    """Return *line* as a list of exactly *width* single-tile tokens."""
-    tiles = list(line[:width])
-    padding = width - len(tiles)
+def _letterspace(line: str, width: int) -> str:
+    """Stretch *line* to exactly *width* by widening the gaps between tiles.
+
+    Only called for boards wider than a Flagship (see
+    ``LETTERSPACE_ABOVE_WIDTH``). A word clock has, at most, a few dozen
+    characters to show; centering that phrase in a 120-tile note array with
+    plain edge padding leaves under 1% of the board lit. Distributing the
+    slack between every character instead -- "H A L B   E L F" rather than
+    "HALB ELF" -- turns the same words into a display that actually uses the
+    row, the way large-format signage letterspaces short headlines.
+
+    Distributes as evenly as possible across the internal gaps (never before
+    the first or after the last character, so centering/left-alignment still
+    controls the outer margin). A line with fewer than two characters, or
+    already at *width*, is returned unchanged -- there is no gap to widen.
+    """
+    if len(line) < 2 or len(line) >= width:
+        return line
+    gaps = len(line) - 1
+    extra = width - len(line)
+    base, remainder = divmod(extra, gaps)
+    out: list[str] = [line[0]]
+    for index, char in enumerate(line[1:], start=1):
+        out.append(" " * (base + (1 if index <= remainder else 0)))
+        out.append(char)
+    return "".join(out)
+
+
+def _align(line: str, width: int, alignment: str, reserve: int = 0) -> list[str]:
+    """Return *line* as a list of exactly *width* single-tile tokens.
+
+    *reserve* holds back that many trailing tiles (left blank) for the
+    minute dots on the row that will carry them -- letterspacing otherwise
+    fills a wide row edge-to-edge with no gap left for them. Ignored (and
+    left as ordinary padding) when it would truncate the line.
+    """
+    usable = width - reserve if reserve and reserve < width and len(line) <= width - reserve else width
+    if usable > LETTERSPACE_ABOVE_WIDTH and len(line) < usable:
+        line = _letterspace(line, usable)
+    tiles = list(line[:usable])
+    padding = usable - len(tiles)
     if alignment == "center":
         left = padding // 2
-        return [" "] * left + tiles + [" "] * (padding - left)
-    return tiles + [" "] * padding
+        result = [" "] * left + tiles + [" "] * (padding - left)
+    else:
+        result = tiles + [" "] * padding
+    return result + [" "] * (width - usable)
 
 
-def _place_dots(rows: list[list[str]], dots: int, marker: str) -> None:
-    """Write *dots* corner markers into the bottom-right of *rows*, in place.
+def _place_dots(rows: list[list[str]], dots: int, marker: str, content_row: int | None) -> None:
+    """Write *dots* markers right after the phrase, in place.
 
-    Skipped when the bottom row has no free tiles — the time itself always
-    outranks the dots.
+    Anchored to *content_row* -- the row holding the last line of the laid-out
+    phrase -- rather than the physical bottom-right corner of the board. A
+    QLOCKTWO's corner dots sit at a fixed matrix corner because the matrix
+    itself is fixed; a split-flap board reflows to every board width, and on
+    anything wider than a Flagship the literal corner can be dozens of tiles
+    from a centered phrase, reading as a stray, unrelated tile rather than a
+    minutes indicator. Skipped when there is no content row, or when the tiles
+    right after the phrase (plus one blank spacer) don't have room -- the time
+    itself always outranks the dots.
     """
-    if dots <= 0 or not rows:
+    if dots <= 0 or not rows or content_row is None:
         return
-    row = rows[-1]
-    # One blank tile of breathing room between the words and the dots.
-    if any(tile != " " for tile in row[-(dots + 1) :]):
+    row = rows[content_row]
+    width = len(row)
+    last_used = next((i for i in range(width - 1, -1, -1) if row[i] != " "), -1)
+    start = last_used + 2  # one blank tile of breathing room, then the dots
+    if start + dots > width:
         return
-    row[len(row) - dots :] = [marker] * dots
+    row[start : start + dots] = [marker] * dots
 
 
 def layout(
@@ -368,12 +439,22 @@ def layout(
         lines = lines[-height:]
 
     top = (height - len(lines)) // 2
+    content_row = top + len(lines) - 1 if lines else None
+    # Letterspacing (see `_align`) fills a wide row edge-to-edge, leaving no
+    # gap for the dots on the row that will carry them -- reserve one first.
+    # Narrow boards never letterspace, so this never shrinks them; it is
+    # itself skipped by `_align` if the line wouldn't fit in what's left.
+    dot_reserve = dots + 1 if dot_marker and dots > 0 and width > LETTERSPACE_ABOVE_WIDTH else 0
+
     rows = [[" "] * width for _ in range(top)]
-    rows += [_align(line, width, alignment) for line in lines]
+    for offset, line in enumerate(lines):
+        row_index = top + offset
+        reserve = dot_reserve if row_index == content_row else 0
+        rows.append(_align(line, width, alignment, reserve=reserve))
     rows += [[" "] * width for _ in range(height - len(rows))]
 
     if dot_marker:
-        _place_dots(rows, dots, dot_marker)
+        _place_dots(rows, dots, dot_marker, content_row)
     return ["".join(row) for row in rows]
 
 
@@ -459,11 +540,16 @@ class WordClockPlugin(PluginBase):
             # across board rows, so `{{word_clock.block}}` on the first template
             # line reproduces the centered layout without needing |wrap.
             data["block"] = "\n".join(lines)
-            # line1..line6 mirror the same rows individually. They keep their
+            # line1..line24 mirror the board rows individually, up to the
+            # platform's tallest board (an 8-tall note array). They keep their
             # full board width on purpose: the engine's alignment pads *around*
             # whatever it is given, so an rstripped row would be indented twice
             # on a centered line. A full-width row passes through untouched.
-            for index in range(FALLBACK_HEIGHT):
+            # Rows past the current board's height are simply blank -- this
+            # used to loop range(FALLBACK_HEIGHT) (always 6), so a 12- or
+            # 24-row board left line7..line24 undeclared *and* left
+            # line1..line6 blank whenever the phrase landed past row 6.
+            for index in range(MAX_LINE_VARIABLES):
                 data[f"line{index + 1}"] = lines[index] if index < len(lines) else ""
 
             return PluginResult(available=True, data=data, formatted_lines=lines)

@@ -18,6 +18,7 @@ from plugins.word_clock import (
     to_board_text,
     wrap_words,
 )
+from plugins.word_clock import _letterspace
 from src.devices import BoardContext
 
 FLAGSHIP = BoardContext.from_device_type("flagship")
@@ -329,10 +330,70 @@ class TestLayout:
                 )
 
 
+class TestLetterspacing:
+    """`_letterspace` is what fills a wide note array instead of leaving a
+    short phrase as a small island of text in an otherwise blank board.
+    """
+
+    def test_stretches_a_line_to_exactly_the_target_width(self):
+        stretched = _letterspace("HALB ELF", 20)
+        assert len(stretched) == 20
+        assert stretched.startswith("H")
+        assert stretched.endswith("F")
+
+    def test_preserves_character_order(self):
+        stretched = _letterspace("HALB ELF", 30)
+        assert [c for c in stretched if c != " "] == list("HALBELF")
+
+    def test_a_single_character_is_returned_unchanged(self):
+        assert _letterspace("H", 20) == "H"
+
+    def test_a_line_already_at_the_target_width_is_unchanged(self):
+        assert _letterspace("HALB ELF", 8) == "HALB ELF"
+
+    def test_a_line_longer_than_the_target_width_is_unchanged(self):
+        """`_align` truncates; `_letterspace` only ever stretches."""
+        assert _letterspace("HALB ELF", 5) == "HALB ELF"
+
+    def test_layout_does_not_letterspace_a_flagship_width_board(self):
+        """Below `LETTERSPACE_ABOVE_WIDTH`, spacing is untouched -- this is
+        the boundary that keeps the Flagship/Note layouts unchanged.
+        """
+        rows = layout("HALB ELF", DE_PREFIX, 22, 1, "left")
+        assert rows[0].strip() == "ES IST HALB ELF"
+        assert "  " not in rows[0].strip()
+
+    def test_layout_letterspaces_a_board_wider_than_a_flagship(self):
+        rows = layout("HALB ELF", DE_PREFIX, 60, 1, "center")
+        assert "".join(rows[0].split()) == "ESISTHALBELF"
+        # Filled well beyond the ~25% a Flagship-style layout would leave.
+        assert len(rows[0].strip()) > 45
+
+
 class TestMinuteDots:
-    def test_dots_occupy_the_bottom_right_tiles(self):
+    def test_dots_sit_right_after_the_phrase(self):
+        """Dots are anchored to the row holding the phrase, not the board's
+        literal last row -- on a Flagship the phrase is vertically centered
+        onto row 2 of 6, and that is where the dots belong.
+        """
         rows = layout("HALB ELF", DE_PREFIX, 22, 6, "center", dots=3, dot_marker="{69}")
-        assert rows[-1].endswith("{69}{69}{69}")
+        text_row = next(i for i, row in enumerate(rows) if row.strip())
+        assert rows[text_row].endswith("{69}{69}{69}")
+        # The bug this fixes: dots used to land in the board's literal last
+        # row even when that row held no text at all.
+        assert rows[-1].strip() == ""
+
+    def test_dots_stay_close_to_the_phrase_on_a_wide_board(self):
+        """The bug this guards against: on a 120-wide board the old
+        bottom-right-corner placement put the dots ~100 tiles from a
+        centered phrase, reading as a stray, unrelated tile.
+        """
+        rows = layout("HALB ELF", DE_PREFIX, 120, 3, "center", dots=3, dot_marker="{69}")
+        text_row = next(i for i, row in enumerate(rows) if row.strip())
+        line = rows[text_row]
+        dot_index = line.index("{69}")
+        text_end = len(line[:dot_index].rstrip())
+        assert dot_index - text_end <= 5
 
     def test_no_dots_are_drawn_at_the_five_minute_mark(self):
         rows = layout("HALB ELF", DE_PREFIX, 22, 6, "center", dots=0, dot_marker="{69}")
@@ -433,6 +494,29 @@ class TestPlugin:
         data = make_plugin().get_data(NOTE).data
         assert [len(data[f"line{n}"]) for n in (1, 2, 3)] == [15, 15, 15]
 
+    def test_line_variables_reach_every_row_on_a_tall_board(self, make_plugin, monkeypatch):
+        """The bug this guards against: line1..line6 used to come from
+        ``range(FALLBACK_HEIGHT)`` -- a hardcoded 6 -- regardless of the
+        board's actual height. On a board taller than a Flagship the
+        vertically-centered phrase lands well past row 6 (row 12 on a 120x24
+        array), so every line variable came back blank and a page built from
+        ``{{word_clock.lineN}}`` rendered an empty board even though
+        ``formatted_lines`` (and so ``block``) was correct.
+        """
+        plugin = make_plugin()
+        monkeypatch.setattr(
+            plugin, "_now", lambda: datetime(2026, 8, 12, 10, 30, tzinfo=ZoneInfo("Europe/Berlin"))
+        )
+        board = BoardContext(device_type="note_array", rows=24, cols=120)
+        result = plugin.get_data(board)
+        assert len(result.formatted_lines) == 24
+        for index, row in enumerate(result.formatted_lines, start=1):
+            assert result.data[f"line{index}"] == row
+        # The phrase is one line, vertically centered among 24 rows, so it
+        # lands well past row 6 -- exactly what the hardcoded loop missed.
+        content_rows = [n for n in range(1, 25) if result.data[f"line{n}"].strip()]
+        assert content_rows and min(content_rows) > 6
+
     def test_block_joins_every_board_row(self, make_plugin):
         result = make_plugin().get_data(NOTE)
         assert result.data["block"] == "\n".join(result.formatted_lines)
@@ -443,7 +527,14 @@ class TestPlugin:
             plugin, "_now", lambda: datetime(2026, 8, 12, 10, 33, tzinfo=ZoneInfo("Europe/Berlin"))
         )
         result = plugin.get_data(NOTE)
-        assert result.formatted_lines[-1].endswith("{66}{66}{66}")
+        # Anchored right after the phrase itself (one blank spacer), not the
+        # board's literal last row (which may just be blank vertical padding).
+        text_row = next(row for row in reversed(result.formatted_lines) if row.strip())
+        assert "{66}{66}{66}" in text_row
+        dot_index = text_row.index("{66}")
+        text_before_dots = text_row[:dot_index].rstrip()
+        assert text_before_dots  # the dots have real phrase text before them
+        assert text_row[len(text_before_dots) : dot_index] == " "
         assert result.data["minute_dots"] == "{66}{66}{66}"
 
     def test_minute_dots_stay_off_by_default(self, make_plugin, monkeypatch):

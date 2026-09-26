@@ -9,6 +9,40 @@ the two drift apart.
 
 ## [Unreleased]
 
+## [1.4.2] — 2026-09-26
+
+### Fixed
+
+- `line1`..`line6` were always populated from `range(FALLBACK_HEIGHT)` (a
+  constant 6) instead of the board's actual height, which was already in
+  scope. On any board taller than a Flagship the phrase is vertically
+  centered onto a row past 6 (row 12 on a 24-row array), so `line1`..`line6`
+  were silently blank on every note array taller than a Flagship, and any
+  page built from `{{word_clock.lineN}}` rendered an empty board.
+- The minute-dot corner markers were always written into the board's literal
+  last row, which is the bottom-right *physical* corner. On a board wider
+  than a Flagship that corner can be dozens of tiles from the centered
+  phrase and reads as a stray, unrelated tile. Dots are now anchored to the
+  row that actually holds the phrase, right after its last character.
+
+### Added
+
+- `line7`..`line24`, so a template can address every row of the tallest
+  board FiestaBoard supports (an 8-tall note array). Rows past the current
+  board's height render blank.
+- On any board wider than a Flagship, the phrase is now letterspaced to fill
+  the row instead of sitting as a small island of text in an otherwise
+  blank one -- a 120-wide note array previously put a ~20-character phrase
+  in well under 1% of the board.
+
+### Changed
+
+- `max_lengths` for `line1`..`line24` and `block` are now sized to the
+  worst case across every board FiestaBoard supports (120 tiles wide, a
+  120x24 note array) rather than the Flagship-only values they were
+  previously (dishonest above a Flagship: `block` declared 138 but a 120x24
+  array actually emits 2903).
+
 ## [1.4.1] — 2026-08-12
 
 ### Removed

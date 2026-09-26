@@ -1,7 +1,7 @@
 {
   "id": "word_clock",
   "name": "Word Clock",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Tell the time in words, QLOCKTWO style, in German, English, Spanish or French. Adapts to Flagship and Note.",
   "author": "Oliver Rummeyer",
   "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--word-clock",
@@ -169,51 +169,177 @@
         "example": "IT IS"
       },
       "block": {
-        "description": "The whole laid-out board as one value, rows separated by newlines. Put this on the first template line to fill the board with the centered phrase.",
+        "description": "The whole laid-out board as one value, rows separated by newlines. Put this on the first template line to fill the board with the centered phrase. Length is geometry-dependent -- 2903 is the worst case, the largest note array (120x24) -- so it is far short of that on a Flagship or Note.",
         "type": "string",
-        "max_length": 138,
+        "max_length": 2903,
         "group": "layout",
         "example": "IT IS QUARTER PAST TEN\\n                      "
       },
       "line1": {
-        "description": "Board row 1 of the laid-out phrase, padded to the board width",
+        "description": "Board row 1 of the laid-out phrase, padded to the board width. Width is geometry-dependent -- 120 is the worst case, the widest note array -- so this is far short of 120 characters on a Flagship or Note.",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
         "group": "layout",
         "example": "                      "
       },
       "line2": {
-        "description": "Board row 2 of the laid-out phrase, padded to the board width",
+        "description": "Board row 2 of the laid-out phrase, padded to the board width. Width is geometry-dependent -- 120 is the worst case, the widest note array -- so this is far short of 120 characters on a Flagship or Note.",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
         "group": "layout",
         "example": "IT IS QUARTER PAST TEN"
       },
       "line3": {
-        "description": "Board row 3 of the laid-out phrase, padded to the board width",
+        "description": "Board row 3 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 3 rows.",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
         "group": "layout",
         "example": ""
       },
       "line4": {
-        "description": "Board row 4, empty on a Note",
+        "description": "Board row 4 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 4 rows (e.g. a Note).",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
         "group": "layout",
         "example": ""
       },
       "line5": {
-        "description": "Board row 5, empty on a Note",
+        "description": "Board row 5 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 5 rows (e.g. a Note).",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
         "group": "layout",
         "example": ""
       },
       "line6": {
-        "description": "Board row 6, empty on a Note",
+        "description": "Board row 6 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 6 rows (e.g. a Note).",
         "type": "string",
-        "max_length": 22,
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line7": {
+        "description": "Board row 7 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 7 rows (e.g. a Flagship or Note); only note arrays taller than one note-height reach this row.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line8": {
+        "description": "Board row 8 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 8 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line9": {
+        "description": "Board row 9 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 9 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line10": {
+        "description": "Board row 10 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 10 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line11": {
+        "description": "Board row 11 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 11 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line12": {
+        "description": "Board row 12 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 12 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line13": {
+        "description": "Board row 13 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 13 rows; only note arrays taller than a Flagship reach this row.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line14": {
+        "description": "Board row 14 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 14 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line15": {
+        "description": "Board row 15 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 15 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line16": {
+        "description": "Board row 16 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 16 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line17": {
+        "description": "Board row 17 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 17 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line18": {
+        "description": "Board row 18 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 18 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line19": {
+        "description": "Board row 19 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 19 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line20": {
+        "description": "Board row 20 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 20 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line21": {
+        "description": "Board row 21 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 21 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line22": {
+        "description": "Board row 22 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 22 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line23": {
+        "description": "Board row 23 of the laid-out phrase, padded to the board width. Empty when the board has fewer than 23 rows.",
+        "type": "string",
+        "max_length": 120,
+        "group": "layout",
+        "example": ""
+      },
+      "line24": {
+        "description": "Board row 24 of the laid-out phrase, padded to the board width. Empty on every board shorter than the platform maximum -- the 8-tall note array is the only board that reaches this row.",
+        "type": "string",
+        "max_length": 120,
         "group": "layout",
         "example": ""
       },
@@ -264,13 +390,31 @@
   "max_lengths": {
     "phrase": 40,
     "phrase_short": 34,
-    "line1": 22,
-    "line2": 22,
-    "line3": 22,
-    "line4": 22,
-    "line5": 22,
-    "line6": 22,
-    "block": 138
+    "line1": 120,
+    "line2": 120,
+    "line3": 120,
+    "line4": 120,
+    "line5": 120,
+    "line6": 120,
+    "line7": 120,
+    "line8": 120,
+    "line9": 120,
+    "line10": 120,
+    "line11": 120,
+    "line12": 120,
+    "line13": 120,
+    "line14": 120,
+    "line15": 120,
+    "line16": 120,
+    "line17": 120,
+    "line18": 120,
+    "line19": 120,
+    "line20": 120,
+    "line21": 120,
+    "line22": 120,
+    "line23": 120,
+    "line24": 120,
+    "block": 2903
   },
   "demo": {
     "name": "Word Clock Demo",
@@ -329,6 +473,16 @@
         "IT IS HALF PAST",
         "     NINE      ",
         "               "
+      ]
+    },
+    {
+      "device_type": "note_array",
+      "notes_wide": 4,
+      "notes_tall": 1,
+      "rows": [
+        "                                                            ",
+        "I   T      I  S     E  L  E  V  E  N     O  '  C  L  O  C  K",
+        "                                                            "
       ]
     }
   ],
