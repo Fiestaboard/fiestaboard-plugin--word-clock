@@ -16,6 +16,10 @@ the two drift apart.
   tiles right after the phrase, so on a Flagship they sat on the middle row
   behind the last word. On a wide board whose phrase reaches the bottom row,
   the letterspacing still holds the corner free for them.
+- The declared `max_length` of `block` (2903) and `line1`..`line24` (120)
+  assumed a 120x24 note array was the largest board. A FiestaPanel accepts
+  grids up to 128x96, and FiestaBoard's conformance suite now renders a
+  106x44 panel, which overran `block`. Raised to 12383 and 128.
 
 ## [1.4.2] — 2026-09-26
 
