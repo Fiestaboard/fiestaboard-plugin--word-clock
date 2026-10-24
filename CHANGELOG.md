@@ -13,8 +13,8 @@ the two drift apart.
 
 - Minute dots are back in the board's bottom-right corner, where the README,
   setup guide and settings description place them. 1.4.2 moved them to the
-  tiles right after the phrase, so on a Flagship they sat on the middle row
-  behind the last word. On a wide board whose phrase reaches the bottom row,
+  tiles right after the phrase, so they sat right behind the last word
+  instead of in the corner. On a wide board whose phrase reaches the bottom row,
   the letterspacing still holds the corner free for them.
 - The declared `max_length` of `block` (2903) and `line1`..`line24` (120)
   assumed a 120x24 note array was the largest board. A FiestaPanel accepts
