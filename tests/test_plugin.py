@@ -371,29 +371,26 @@ class TestLetterspacing:
 
 
 class TestMinuteDots:
-    def test_dots_sit_right_after_the_phrase(self):
-        """Dots are anchored to the row holding the phrase, not the board's
-        literal last row -- on a Flagship the phrase is vertically centered
-        onto row 2 of 6, and that is where the dots belong.
+    def test_dots_sit_in_the_bottom_right_corner(self):
+        """Dots take the board's bottom-right corner, like a QLOCKTWO's fixed
+        corner dots -- not the tiles right after the phrase. On a Flagship the
+        phrase is centered onto row 2 of 6 and the dots stay in row 6.
         """
         rows = layout("HALB ELF", DE_PREFIX, 22, 6, "center", dots=3, dot_marker="{69}")
-        text_row = next(i for i, row in enumerate(rows) if row.strip())
-        assert rows[text_row].endswith("{69}{69}{69}")
-        # The bug this fixes: dots used to land in the board's literal last
-        # row even when that row held no text at all.
-        assert rows[-1].strip() == ""
+        assert rows[-1] == " " * 19 + "{69}{69}{69}"
+        assert "{69}" not in "".join(rows[:-1])
 
-    def test_dots_stay_close_to_the_phrase_on_a_wide_board(self):
-        """The bug this guards against: on a 120-wide board the old
-        bottom-right-corner placement put the dots ~100 tiles from a
-        centered phrase, reading as a stray, unrelated tile.
-        """
+    def test_dots_sit_in_the_corner_on_a_wide_board(self):
         rows = layout("HALB ELF", DE_PREFIX, 120, 3, "center", dots=3, dot_marker="{69}")
-        text_row = next(i for i, row in enumerate(rows) if row.strip())
-        line = rows[text_row]
-        dot_index = line.index("{69}")
-        text_end = len(line[:dot_index].rstrip())
-        assert dot_index - text_end <= 5
+        assert rows[-1].endswith("{69}{69}{69}")
+        assert "{69}" not in "".join(rows[:-1])
+
+    def test_a_letterspaced_bottom_row_leaves_room_for_the_dots(self):
+        """On a wide board the phrase is letterspaced edge to edge; when it
+        lands on the bottom row the corner is reserved for the dots.
+        """
+        rows = layout("HALB ELF", DE_PREFIX, 120, 1, "center", dots=3, dot_marker="{69}")
+        assert rows[0].endswith(" {69}{69}{69}")
 
     def test_no_dots_are_drawn_at_the_five_minute_mark(self):
         rows = layout("HALB ELF", DE_PREFIX, 22, 6, "center", dots=0, dot_marker="{69}")
@@ -527,14 +524,7 @@ class TestPlugin:
             plugin, "_now", lambda: datetime(2026, 8, 12, 10, 33, tzinfo=ZoneInfo("Europe/Berlin"))
         )
         result = plugin.get_data(NOTE)
-        # Anchored right after the phrase itself (one blank spacer), not the
-        # board's literal last row (which may just be blank vertical padding).
-        text_row = next(row for row in reversed(result.formatted_lines) if row.strip())
-        assert "{66}{66}{66}" in text_row
-        dot_index = text_row.index("{66}")
-        text_before_dots = text_row[:dot_index].rstrip()
-        assert text_before_dots  # the dots have real phrase text before them
-        assert text_row[len(text_before_dots) : dot_index] == " "
+        assert result.formatted_lines[-1].endswith("{66}{66}{66}")
         assert result.data["minute_dots"] == "{66}{66}{66}"
 
     def test_minute_dots_stay_off_by_default(self, make_plugin, monkeypatch):

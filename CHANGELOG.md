@@ -9,6 +9,14 @@ the two drift apart.
 
 ## [Unreleased]
 
+### Fixed
+
+- Minute dots are back in the board's bottom-right corner, where the README,
+  setup guide and settings description place them. 1.4.2 moved them to the
+  tiles right after the phrase, so on a Flagship they sat on the middle row
+  behind the last word. On a wide board whose phrase reaches the bottom row,
+  the letterspacing still holds the corner free for them.
+
 ## [1.4.2] — 2026-09-26
 
 ### Fixed
