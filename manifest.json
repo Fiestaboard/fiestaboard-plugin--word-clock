@@ -112,6 +112,7 @@
       "dot_color": {
         "type": "string",
         "title": "Minute dot color",
+        "description": "Heart uses board character 62: a heart on a Note and on Flagships built from 2026 on, a degree sign on older Flagships.",
         "enum": [
           "white",
           "red",
@@ -119,7 +120,8 @@
           "yellow",
           "green",
           "blue",
-          "violet"
+          "violet",
+          "heart"
         ],
         "enumNames": [
           "White",
@@ -128,7 +130,8 @@
           "Yellow",
           "Green",
           "Blue",
-          "Violet"
+          "Violet",
+          "Heart"
         ],
         "default": "white"
       }
@@ -372,7 +375,7 @@
         "example": "2"
       },
       "minute_dots": {
-        "description": "Color tiles for the minute offset, empty unless minute dots are enabled",
+        "description": "Color tiles (or hearts) for the minute offset, empty unless minute dots are enabled",
         "type": "string",
         "max_length": 16,
         "group": "detail",

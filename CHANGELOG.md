@@ -9,6 +9,12 @@ the two drift apart.
 
 ## [Unreleased]
 
+### Added
+
+- `heart` as a minute dot color: the dots become hearts (board character
+  62). A Flagship built before 2026 carries a degree sign on that flap and
+  shows `°` instead.
+
 ### Fixed
 
 - Minute dots are back in the board's bottom-right corner, where the README,

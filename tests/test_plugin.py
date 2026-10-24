@@ -527,6 +527,15 @@ class TestPlugin:
         assert result.formatted_lines[-1].endswith("{66}{66}{66}")
         assert result.data["minute_dots"] == "{66}{66}{66}"
 
+    def test_minute_dots_can_be_hearts(self, make_plugin, monkeypatch):
+        plugin = make_plugin(show_minute_dots=True, dot_color="heart")
+        monkeypatch.setattr(
+            plugin, "_now", lambda: datetime(2026, 8, 12, 10, 33, tzinfo=ZoneInfo("Europe/Berlin"))
+        )
+        result = plugin.get_data(NOTE)
+        assert result.formatted_lines[-1].endswith(" ♥♥♥")
+        assert result.data["minute_dots"] == "♥♥♥"
+
     def test_minute_dots_stay_off_by_default(self, make_plugin, monkeypatch):
         plugin = make_plugin()
         monkeypatch.setattr(

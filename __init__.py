@@ -70,6 +70,9 @@ DOT_COLORS = {
     "blue": "{67}",
     "violet": "{68}",
     "white": "{69}",
+    # Character 62: a heart on a Note, a note array and a Flagship built from
+    # 2026 on; older Flagships carry a degree sign on that flap instead.
+    "heart": "♥",
 }
 
 LANGUAGES = ("de", "en", "es", "fr")
