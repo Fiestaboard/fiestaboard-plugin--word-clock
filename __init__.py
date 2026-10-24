@@ -70,6 +70,9 @@ DOT_COLORS = {
     "blue": "{67}",
     "violet": "{68}",
     "white": "{69}",
+    # Character 62: a heart on a Note, a note array and a Flagship built from
+    # 2026 on; older Flagships carry a degree sign on that flap instead.
+    "heart": "♥",
 }
 
 LANGUAGES = ("de", "en", "es", "fr")
@@ -392,28 +395,20 @@ def _align(line: str, width: int, alignment: str, reserve: int = 0) -> list[str]
     return result + [" "] * (width - usable)
 
 
-def _place_dots(rows: list[list[str]], dots: int, marker: str, content_row: int | None) -> None:
-    """Write *dots* markers right after the phrase, in place.
+def _place_dots(rows: list[list[str]], dots: int, marker: str) -> None:
+    """Write *dots* corner markers into the bottom-right of *rows*, in place.
 
-    Anchored to *content_row* -- the row holding the last line of the laid-out
-    phrase -- rather than the physical bottom-right corner of the board. A
-    QLOCKTWO's corner dots sit at a fixed matrix corner because the matrix
-    itself is fixed; a split-flap board reflows to every board width, and on
-    anything wider than a Flagship the literal corner can be dozens of tiles
-    from a centered phrase, reading as a stray, unrelated tile rather than a
-    minutes indicator. Skipped when there is no content row, or when the tiles
-    right after the phrase (plus one blank spacer) don't have room -- the time
-    itself always outranks the dots.
+    The corner is the board's own bottom-right tile, like the fixed corner
+    dots on a QLOCKTWO -- not the end of the phrase. Skipped when the bottom
+    row has no free tiles there -- the time itself always outranks the dots.
     """
-    if dots <= 0 or not rows or content_row is None:
+    if dots <= 0 or not rows:
         return
-    row = rows[content_row]
-    width = len(row)
-    last_used = next((i for i in range(width - 1, -1, -1) if row[i] != " "), -1)
-    start = last_used + 2  # one blank tile of breathing room, then the dots
-    if start + dots > width:
+    row = rows[-1]
+    # One blank tile of breathing room between the words and the dots.
+    if any(tile != " " for tile in row[-(dots + 1) :]):
         return
-    row[start : start + dots] = [marker] * dots
+    row[len(row) - dots :] = [marker] * dots
 
 
 def layout(
@@ -439,9 +434,9 @@ def layout(
         lines = lines[-height:]
 
     top = (height - len(lines)) // 2
-    content_row = top + len(lines) - 1 if lines else None
     # Letterspacing (see `_align`) fills a wide row edge-to-edge, leaving no
-    # gap for the dots on the row that will carry them -- reserve one first.
+    # gap for the corner dots when the phrase reaches the bottom row --
+    # reserve one first.
     # Narrow boards never letterspace, so this never shrinks them; it is
     # itself skipped by `_align` if the line wouldn't fit in what's left.
     dot_reserve = dots + 1 if dot_marker and dots > 0 and width > LETTERSPACE_ABOVE_WIDTH else 0
@@ -449,12 +444,12 @@ def layout(
     rows = [[" "] * width for _ in range(top)]
     for offset, line in enumerate(lines):
         row_index = top + offset
-        reserve = dot_reserve if row_index == content_row else 0
+        reserve = dot_reserve if row_index == height - 1 else 0
         rows.append(_align(line, width, alignment, reserve=reserve))
     rows += [[" "] * width for _ in range(height - len(rows))]
 
     if dot_marker:
-        _place_dots(rows, dots, dot_marker, content_row)
+        _place_dots(rows, dots, dot_marker)
     return ["".join(row) for row in rows]
 
 
