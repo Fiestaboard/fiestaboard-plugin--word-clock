@@ -63,7 +63,7 @@ FiestaBoard splits a value containing newlines across the board rows, so this gi
 | `rounding` | `down` \| `nearest` | `down` | `down` matches a physical word clock |
 | `alignment` | `center` \| `left` | `center` | Horizontal alignment of each row |
 | `show_minute_dots` | boolean | `false` | Corner dots for the minutes the words cannot express |
-| `dot_color` | `white`, `red`, `orange`, `yellow`, `green`, `blue`, `violet` | `white` | Tile color for the minute dots |
+| `dot_color` | `white`, `red`, `orange`, `yellow`, `green`, `blue`, `violet`, `heart` | `white` | Tile color for the minute dots, or hearts instead of color tiles |
 
 ### German dialects
 
@@ -93,6 +93,8 @@ Spanish agrees the opener with the hour the phrase *names*: 12:40 reads `ES LA U
 A QLOCKTWO carries four corner dots for the minutes between two five-minute steps. With **Show minute dots** on, the plugin puts up to four colored tiles in the bottom right — one per minute past the step. At 10:33 with `down` rounding the board reads `IT IS HALF PAST TEN` plus three dots — 10:33 floors to the half-hour step, and the three minutes past it become the dots.
 
 The dots are skipped when the bottom row has no free tiles; the time itself always wins.
+
+Set **Minute dot color** to **Heart** for hearts instead of color tiles. A heart is board character 62, which a Note and any Flagship built from 2026 on print as a heart; an older Flagship carries a degree sign on that flap, so it shows `°` instead.
 
 ## Environment Variables
 

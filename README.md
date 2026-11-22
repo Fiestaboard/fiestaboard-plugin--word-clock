@@ -119,7 +119,7 @@ The same moment in the other three languages:
 | `rounding` | `down` \| `nearest` | `down` | `down` matches a physical word clock |
 | `alignment` | `center` \| `left` | `center` | Horizontal alignment of each row |
 | `show_minute_dots` | boolean | `false` | Corner dots for the minutes the words cannot express |
-| `dot_color` | color name | `white` | Tile color used for the minute dots |
+| `dot_color` | color name or `heart` | `white` | Tile color used for the minute dots, or `heart` for heart tiles |
 
 No API key, no network access, no environment variables.
 
